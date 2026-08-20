@@ -1,3 +1,4 @@
+import os
 """
 AI/Data Science Salary Predictor — Streamlit Dashboard
 
@@ -28,7 +29,9 @@ st.write(
 # ---------------------------------------------------------
 @st.cache_resource
 def load_model():
-    return joblib.load("models/salary_prediction_pipeline.joblib")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    MODEL_PATH = os.path.join(BASE_DIR, "models", "salary_prediction_pipeline.joblib")
+    return joblib.load(MODEL_PATH)
 
 try:
     model = load_model()

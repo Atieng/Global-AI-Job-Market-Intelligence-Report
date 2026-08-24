@@ -1,72 +1,92 @@
-# AI Job Market Analysis Pipeline (CRISP-DM, reusable)
+# Global AI Job Market Intelligence Report
 
-A modular Python pipeline for analyzing AI/Data Science job market datasets
-(skills demand, salary benchmarks, remote work trends, salary prediction,
-job-level classification). Built so you can reuse it on future similar
-datasets by editing **one file: `config.py`**.
+A data science project that predicts salaries for AI & Data Science roles based on job characteristics — built end-to-end using the CRISP-DM methodology, from business understanding through a deployed interactive dashboard.
 
-## Structure
+## Project Goal
+
+Give job seekers, HR teams, recruiters, and universities a data-backed answer to *"what should this role actually pay?"* — based on real, measurable job characteristics (experience level, required skills, remote status, company size, industry) rather than guesswork or outdated salary surveys.
+
+**Success criterion:** R² ≥ 0.70 on held-out test data.
+
+## Process (CRISP-DM)
+
+1. **Business Understanding** — Defined the problem, stakeholders, and success metrics.
+2. **Data Understanding** — Explored dataset structure, distributions, and quality issues.
+3. **Data Preparation** — Cleaned the data and engineered features (skill flags, seniority score, remote/hybrid indicators, etc.).
+4. **Modeling** — Compared 5 regression algorithms, cross-validated the top performers, and tuned a Gradient Boosting model with `RandomizedSearchCV`.
+5. **Evaluation** — Assessed model performance with MAE, RMSE, and R² on a held-out test set; identified and fixed a data leakage issue (a feature accidentally derived from the target variable) to ensure the final results are trustworthy.
+6. **Deployment** — Saved the final model pipeline and built an interactive Streamlit dashboard for live predictions.
+
+##  Repository Structure
 
 ```
-ai_job_market_pipeline/
-├── config.py       # <-- EDIT THIS for each new dataset (column names, paths)
-├── data_prep.py    # Data Understanding + Preparation (load, profile, clean)
-├── eda.py          # Exploratory analysis: top skills, salary breakdowns, correlations
-├── modeling.py     # Regression (salary) + Classification (job level) models
-├── main.py         # Runs the full pipeline end-to-end
-├── requirements.txt
-├── data/           # put your raw CSV/Excel here
-├── outputs/        # EDA result tables get saved here as CSV
-└── models/         # trained models get saved here as .joblib
+├── Data/                 # Raw and/or processed dataset(s)
+├── Streamlit/            # Streamlit dashboard app (salary_dashboard.py + saved model)
+│   └── models/           # Saved model pipeline (.joblib) and metadata
+├── python_files/         # [describe what this folder contains]
+├── index.ipynb           # Main notebook — full CRISP-DM workflow
+├── requirements.txt      # Python dependencies (pinned versions)
+├── .gitignore
+└── README.md
 ```
 
-## How to use on a NEW dataset
+## Tech Stack
 
-1. Drop your dataset file into `data/`.
-2. Open `config.py` and update:
-   - `raw_data_path` → path to your file
-   - `salary_col`, `country_col`, `experience_col`, `remote_col`, `skills_col`, `job_title_col`
-     → rename to match your dataset's actual column headers
-   - `regression_target` / `classification_target` if you want to predict something else
-3. Run:
-   ```bash
-   pip install -r requirements.txt
-   python main.py
-   ```
-4. Check `outputs/` for CSV summaries and `models/` for trained models.
+- **Python** — pandas, numpy
+- **Modeling** — scikit-learn (Gradient Boosting, Random Forest, Decision Tree, Linear Regression, Ridge)
+- **Visualization** — matplotlib, seaborn
+- **Deployment** — Streamlit
+- **Model persistence** — joblib
 
-You do **not** need to touch `data_prep.py`, `eda.py`, `modeling.py`, or
-`main.py` for a new dataset — only `config.py`.
+## Getting Started
 
-## What each stage covers (CRISP-DM)
-
-| Stage | File | What it does |
-|---|---|---|
-| Business Understanding | (your notes / config comments) | Define target questions |
-| Data Understanding | `data_prep.profile_data`, `eda.py` | Missingness, dtypes, skill frequency, salary stats, correlations |
-| Data Preparation | `data_prep.clean_data`, `standardize_remote_column` | Dedup, type coercion, missing-value handling, category normalization |
-| Modeling | `modeling.build_regression_model`, `build_classification_model` | RandomForest regression for salary, RandomForest classification for job level |
-| Evaluation | printed metrics (MAE/RMSE/R², accuracy/F1) | Console + returned dict |
-| Deployment (light) | `models/*.joblib` | Reload anytime with `modeling.load_model()` and call `predict_new()` |
-
-## Using a trained model on new records later
-
-```python
-from modeling import load_model, predict_new
-import pandas as pd
-
-model = load_model("models/regression_model.joblib")
-new_data = pd.DataFrame([...])  # same feature columns used in training
-preds = predict_new(model, new_data)
+### 1. Clone the repo
+```bash
+git clone https://github.com/Atieng/Global-AI-Job-Market-Intelligence-Report.git
+cd Global-AI-Job-Market-Intelligence-Report
 ```
 
-## Notes
+### 2. Set up a virtual environment
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-- `experience_salary_correlation()` assumes a rough seniority order
-  (Entry < Mid < Senior < Executive). Adjust `order_guess` in `eda.py`
-  if your dataset uses different labels.
-- Skills column is assumed to be a single string per row with a separator
-  (default `,`). If your dataset already has skills as a list/JSON, adjust
-  `top_skills()` in `eda.py`.
-- All modeling uses `RandomForest` for a strong, low-tuning baseline. Swap
-  in other scikit-learn estimators inside `modeling.py` if needed.
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run the notebook
+Open `index.ipynb` in Jupyter to walk through the full analysis, from EDA to model evaluation.
+
+### 5. Run the dashboard locally
+```bash
+cd Streamlit
+streamlit run salary_dashboard.py
+```
+
+## Results
+
+| Metric | Value |
+|---|---|
+| Model | Tuned Gradient Boosting Regressor |
+| Test MAE | *[20374.819321]* |
+| Test RMSE | *[29350.309721]* |
+| Test R² | *[0.763807]* |
+
+ 
+
+## 🌐 Live Demo
+
+Try the deployed dashboard here: *[https://global-ai-job-market-intelligence-report-xnpdrkglaqym7wafldedl.streamlit.app/]*
+
+##  Limitations
+
+- The dataset reflects a snapshot in time and may not capture longer-term market shifts.
+- Predictions are estimates, not guaranteed salary figures — use them as a benchmark range.
+
+##  Notes
+
+During evaluation, a data leakage issue was identified: a feature (`salary_category`) had been derived directly from the target variable (`salary_usd`) via quartile binning and accidentally left in the model's inputs. This was removed and the model retrained to ensure reported performance reflects genuine predictive power rather than an artifact of leakage.
+ 

@@ -1,14 +1,14 @@
 import os
-"""
-AI/Data Science Salary Predictor — Streamlit Dashboard
+# """
+# AI/Data Science Salary Predictor — Streamlit Dashboard
 
-Run with:
-    streamlit run salary_dashboard.py
+# Run with:
+    # streamlit run salary_dashboard.py
 
-Expects the saved model pipeline at: models/salary_prediction_pipeline.joblib
-(created in Section 6 of your notebook). Place this file in the same folder
-as your notebook so the relative path resolves correctly.
-"""
+# Expects the saved model pipeline at: models/salary_prediction_pipeline.joblib
+# (created in Section 6 of your notebook). Place this file in the same folder
+# as your notebook so the relative path resolves correctly.
+""
 
 import streamlit as st
 import pandas as pd

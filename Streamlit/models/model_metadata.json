@@ -23,7 +23,6 @@
         "has_nlp",
         "has_docker",
         "seniority_impact",
-        "application_duration",
         "posting_month",
         "posting_year",
         "deadline_month",

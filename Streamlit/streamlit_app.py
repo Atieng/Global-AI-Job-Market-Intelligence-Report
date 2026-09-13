@@ -13,6 +13,16 @@ import joblib
 import json
 import os
 
+# Anchor all file paths to this script's own location, not the process's
+# working directory — this matters because Streamlit Cloud runs apps with
+# the working directory set to the repo root, not the app's own folder,
+# while running locally with `cd Streamlit && streamlit run ...` sets the
+# working directory to Streamlit/ itself. Using __file__ makes both work.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "salary_prediction_pipeline.joblib")
+METADATA_PATH = os.path.join(BASE_DIR, "models", "model_metadata.json")
+DATA_PATH = os.path.join(BASE_DIR, "..", "Data", "ai_job_dataset.csv")
+
 # ---------------------------------------------------------
 # Page setup
 # ---------------------------------------------------------
@@ -28,12 +38,12 @@ st.set_page_config(
 # ---------------------------------------------------------
 @st.cache_resource
 def load_model():
-    return joblib.load("models/salary_prediction_pipeline.joblib")
+    return joblib.load(MODEL_PATH)
 
 @st.cache_data
 def load_metadata():
-    if os.path.exists("models/model_metadata.json"):
-        with open("models/model_metadata.json") as f:
+    if os.path.exists(METADATA_PATH):
+        with open(METADATA_PATH) as f:
             return json.load(f)
     return None
 
@@ -120,7 +130,6 @@ if page == "🏠 Overview":
     st.divider()
     st.subheader("Market Trends")
 
-    DATA_PATH = "../Data/ai_job_dataset.csv"  # confirmed via `find . -iname "*.csv"`
     if os.path.exists(DATA_PATH):
         df = pd.read_csv(DATA_PATH)
 
@@ -277,11 +286,6 @@ elif page == "🔮 Predict Salary":
             st.session_state.prediction_history = st.session_state.prediction_history[:10]
         except Exception as e:
             st.error(f"Prediction failed: {e}")
-            st.info(
-                "This usually means the input columns don't exactly match what the model "
-                "was trained on. Check your notebook's final `X.columns` and update the "
-                "`input_data` dictionary above to match exactly."
-            )
 
     # Show prediction history for this session
     if st.session_state.prediction_history:

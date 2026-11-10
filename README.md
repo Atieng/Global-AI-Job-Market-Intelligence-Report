@@ -1,3 +1,26 @@
+livvy@fedora:~/Documents/Projects_to_be_finished/Global-AI-Job-Market-Intelligence-Report$ git add .gitignore models/
+git commit -m "Ignore tooling folders; add trained model and metadata"
+git push origin main
+[main 4d0b193] Ignore tooling folders; add trained model and metadata
+ 3 files changed, 51 insertions(+), 1 deletion(-)
+ create mode 100644 models/model_metadata.json
+ create mode 100644 models/salary_prediction_pipeline.joblib
+Enumerating objects: 8, done.
+Counting objects: 100% (8/8), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (6/6), 48.35 KiB | 12.09 MiB/s, done.
+Total 6 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/Atieng/Global-AI-Job-Market-Intelligence-Report.git
+   69b1c30..4d0b193  main -> main
+livvy@fedora:~/Documents/Projects_to_be_finished/Global-AI-Job-Market-Intelligence-Report$ grep -iE "scikit|pandas|numpy|joblib|streamlit" requirements.txt
+joblib==1.5.3
+numpy==2.4.4
+pandas==3.0.2
+scikit-learn==1.8.0
+streamlit==1.61.1
+livvy@fedora:~/Documents/Projects_to_be_finished/Global-AI-Job-Market-Intelligence-Report$ cat README.md
 # Global AI Job Market Intelligence Report
 
 A data science project that predicts salaries for AI & Data Science roles based on job characteristics — built end-to-end using the CRISP-DM methodology, from business understanding through a deployed interactive dashboard.
@@ -89,4 +112,5 @@ Try the deployed dashboard here: *[https://global-ai-job-market-intelligence-rep
 ##  Notes
 
 During evaluation, a data leakage issue was identified: a feature (`salary_category`) had been derived directly from the target variable (`salary_usd`) via quartile binning and accidentally left in the model's inputs. This was removed and the model retrained to ensure reported performance reflects genuine predictive power rather than an artifact of leakage.
- 
+ livvy@fedora:~/Documents/Projects_to_be_finished/Global-AI-Job-Market-Intelligence-Report$ 
+

@@ -16,3 +16,6 @@ env/
 .streamlit/secrets.toml
 
  
+# Tooling
+.claude/
+.agents/

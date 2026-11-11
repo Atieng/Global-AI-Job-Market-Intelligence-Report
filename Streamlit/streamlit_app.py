@@ -267,12 +267,17 @@ elif page == "🔮 Predict Salary":
     if st.button("Predict Salary", type="primary", use_container_width=True):
         try:
             prediction = model.predict(input_data)[0]
-            mae = metadata.get("test_mae", 13500) if metadata else 13500
+            mae = metadata.get("test_mae", 20035) if metadata else 20035
             low, high = prediction - mae, prediction + mae
 
             r1, r2 = st.columns(2)
             r1.metric("Estimated Salary", f"${prediction:,.0f} / year")
             r2.metric("Typical Range", f"${low:,.0f} – ${high:,.0f}")
+            st.caption(
+                f"How to read this: predictions are typically within about ${mae:,.0f} "
+                f"(roughly 17-20% of a typical salary) of the real figure. Use the range "
+                f"as a benchmark for salary conversations, not an exact quote."
+            )
 
             # Save to session history (most recent first, capped at 10)
             st.session_state.prediction_history.insert(0, {
@@ -393,5 +398,8 @@ elif page == "ℹ️ About":
         - Predictions are estimates, not guaranteed salary figures.
         - The underlying data reflects a snapshot in time and may not capture
           longer-term market shifts.
+        - The dataset appears to be synthetic or heavily simplified, so accuracy
+          on real-world job postings is likely lower.
+        - The typical error is about $20,000, so treat results as a range.
         """
     )

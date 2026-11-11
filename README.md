@@ -1,53 +1,64 @@
-livvy@fedora:~/Documents/Projects_to_be_finished/Global-AI-Job-Market-Intelligence-Report$ git add .gitignore models/
-git commit -m "Ignore tooling folders; add trained model and metadata"
-git push origin main
-[main 4d0b193] Ignore tooling folders; add trained model and metadata
- 3 files changed, 51 insertions(+), 1 deletion(-)
- create mode 100644 models/model_metadata.json
- create mode 100644 models/salary_prediction_pipeline.joblib
-Enumerating objects: 8, done.
-Counting objects: 100% (8/8), done.
-Delta compression using up to 4 threads
-Compressing objects: 100% (6/6), done.
-Writing objects: 100% (6/6), 48.35 KiB | 12.09 MiB/s, done.
-Total 6 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
-To https://github.com/Atieng/Global-AI-Job-Market-Intelligence-Report.git
-   69b1c30..4d0b193  main -> main
-livvy@fedora:~/Documents/Projects_to_be_finished/Global-AI-Job-Market-Intelligence-Report$ grep -iE "scikit|pandas|numpy|joblib|streamlit" requirements.txt
-joblib==1.5.3
-numpy==2.4.4
-pandas==3.0.2
-scikit-learn==1.8.0
-streamlit==1.61.1
-livvy@fedora:~/Documents/Projects_to_be_finished/Global-AI-Job-Market-Intelligence-Report$ cat README.md
 # Global AI Job Market Intelligence Report
 
-A data science project that predicts salaries for AI & Data Science roles based on job characteristics — built end-to-end using the CRISP-DM methodology, from business understanding through a deployed interactive dashboard.
+A data science project that predicts salaries for AI and Data Science roles from job characteristics. It follows the CRISP-DM methodology end to end, from business understanding through a deployed interactive dashboard.
+
+**[Live demo](https://global-ai-job-market-intelligence-report-xnpdrkglaqym7wafldedl.streamlit.app/)**
 
 ## Project Goal
 
-Give job seekers, HR teams, recruiters, and universities a data-backed answer to *"what should this role actually pay?"* — based on real, measurable job characteristics (experience level, required skills, remote status, company size, industry) rather than guesswork or outdated salary surveys.
+Give job seekers, HR teams, recruiters, and universities a data-backed answer to *"what should this role pay?"*, based on measurable job characteristics (experience level, required skills, remote status, company size, industry) rather than guesswork or outdated salary surveys.
 
-**Success criterion:** R² ≥ 0.70 on held-out test data.
+**Success criterion:** R² ≥ 0.70 on held-out test data. **Achieved: R² = 0.764.**
+
+## Results
+
+| Metric | Value |
+|---|---|
+| Model | Tuned Gradient Boosting Regressor |
+| Test MAE | $20,035 |
+| Test RMSE | $29,350 |
+| Test R² | 0.764 |
+| 5-fold CV R² (training set) | 0.765 (std 0.010) |
+
+Test and cross-validation scores agree closely, so the model is not overfitting.
+
+### What these numbers mean
+
+- **R² = 0.76:** the model explains about three-quarters of the differences in salary between jobs. The rest comes from factors not in the data, such as negotiation and individual circumstances.
+- **Average error ≈ $20,000 (about 17-20% of a typical salary):** a predicted salary of $100,000 should be read as roughly $80,000-$120,000.
+- **Versus guessing:** always guessing the average salary gives errors of around $60,000. This model roughly halves that.
+- **Best used as:** a benchmark range for salary conversations, not an exact quote.
+
+**Model comparison (test set, default settings):**
+
+| Model | MAE | RMSE | R² |
+|---|---|---|---|
+| Gradient Boosting | $20,310 | $29,501 | 0.761 |
+| Random Forest | $20,649 | $30,413 | 0.746 |
+| Ridge Regression | $21,113 | $30,445 | 0.746 |
+| Extra Trees | $23,035 | $34,539 | 0.673 |
+| Decision Tree | $27,602 | $41,395 | 0.530 |
+
+**What drives salary:** experience level and years of experience dominate the feature importances, followed by the seniority interaction feature, employee country of residence, and company size.
 
 ## Process (CRISP-DM)
 
-1. **Business Understanding** — Defined the problem, stakeholders, and success metrics.
-2. **Data Understanding** — Explored dataset structure, distributions, and quality issues.
-3. **Data Preparation** — Cleaned the data and engineered features (skill flags, seniority score, remote/hybrid indicators, etc.).
-4. **Modeling** — Compared 5 regression algorithms, cross-validated the top performers, and tuned a Gradient Boosting model with `RandomizedSearchCV`.
-5. **Evaluation** — Assessed model performance with MAE, RMSE, and R² on a held-out test set; identified and fixed a data leakage issue (a feature accidentally derived from the target variable) to ensure the final results are trustworthy.
-6. **Deployment** — Saved the final model pipeline and built an interactive Streamlit dashboard for live predictions.
+1. **Business Understanding:** defined the problem, stakeholders, and success metrics.
+2. **Data Understanding:** explored dataset structure, distributions, and quality.
+3. **Data Preparation:** cleaned the data and engineered features (skill flags, seniority score, remote/hybrid indicators, hiring window).
+4. **Modeling:** compared 5 regression algorithms, cross-validated the top performers, and tuned Gradient Boosting and Random Forest with `RandomizedSearchCV`.
+5. **Evaluation:** assessed MAE, RMSE, and R² on a held-out test set. Found and fixed a data leakage issue (see Notes) so the reported results are trustworthy.
+6. **Deployment:** saved the final pipeline and built an interactive Streamlit dashboard for live predictions.
 
-##  Repository Structure
+## Repository Structure
 
 ```
-├── Data/                 # Raw and/or processed dataset(s)
-├── Streamlit/            # Streamlit dashboard app (salary_dashboard.py + saved model)
-│   └── models/           # Saved model pipeline (.joblib) and metadata
-├── python_files/         # [describe what this folder contains]
-├── index.ipynb           # Main notebook — full CRISP-DM workflow
+├── Data/                 # Raw dataset files
+├── Streamlit/            # Streamlit dashboard (streamlit_app.py)
+│   └── models/           # Model pipeline (.joblib) and metadata used by the app
+├── models/               # Saved model pipeline (.joblib) and metadata from the notebook
+├── python_files/         # Supporting Python scripts
+├── index.ipynb           # Main notebook: full CRISP-DM workflow
 ├── requirements.txt      # Python dependencies (pinned versions)
 ├── .gitignore
 └── README.md
@@ -55,11 +66,11 @@ Give job seekers, HR teams, recruiters, and universities a data-backed answer to
 
 ## Tech Stack
 
-- **Python** — pandas, numpy
-- **Modeling** — scikit-learn (Gradient Boosting, Random Forest, Decision Tree, Linear Regression, Ridge)
-- **Visualization** — matplotlib, seaborn
-- **Deployment** — Streamlit
-- **Model persistence** — joblib
+- **Data:** pandas, numpy
+- **Modeling:** scikit-learn (Gradient Boosting, Random Forest, Extra Trees, Decision Tree, Ridge)
+- **Visualization:** matplotlib, seaborn
+- **Deployment:** Streamlit
+- **Model persistence:** joblib
 
 ## Getting Started
 
@@ -86,31 +97,24 @@ Open `index.ipynb` in Jupyter to walk through the full analysis, from EDA to mod
 ### 5. Run the dashboard locally
 ```bash
 cd Streamlit
-streamlit run salary_dashboard.py
+streamlit run streamlit_app.py
 ```
 
-## Results
+## Data
 
-| Metric | Value |
-|---|---|
-| Model | Tuned Gradient Boosting Regressor |
-| Test MAE | *[20374.819321]* |
-| Test RMSE | *[29350.309721]* |
-| Test R² | *[0.763807]* |
+[Global AI Job Market & Salary Trends 2025](https://www.kaggle.com/) (Kaggle): 15,000 AI and Data Science job postings with salary, experience level, skills, location, company size, and remote ratio.
 
- 
+## Limitations
 
-## 🌐 Live Demo
+- **The dataset appears to be synthetic or heavily simplified.** Relationships in the data are unusually clean (for example, a 0.93 correlation between years of experience and experience level), so performance on real-world postings would likely be lower.
+- **Performance plateaus around R² ≈ 0.76.** A linear Ridge baseline (R² 0.746) performs almost as well as the tuned ensemble (R² 0.764), which suggests the remaining variance is noise rather than something a more complex model can capture.
+- The data is a single snapshot and does not capture longer-term market shifts.
+- Predictions are estimates, not guaranteed salary figures. Use them as a benchmark range. The average error is about $20,000.
 
-Try the deployed dashboard here: *[https://global-ai-job-market-intelligence-report-xnpdrkglaqym7wafldedl.streamlit.app/]*
+## Notes
 
-##  Limitations
+During evaluation, a data leakage issue was identified: a feature (`salary_category`) had been derived directly from the target variable (`salary_usd`) via quartile binning and left in the model's inputs. It was removed and the model retrained. This lowered the headline score from an inflated R² ≈ 0.87 to a genuine R² ≈ 0.76, and the figures in this README reflect the corrected model.
 
-- The dataset reflects a snapshot in time and may not capture longer-term market shifts.
-- Predictions are estimates, not guaranteed salary figures — use them as a benchmark range.
+## Author
 
-##  Notes
-
-During evaluation, a data leakage issue was identified: a feature (`salary_category`) had been derived directly from the target variable (`salary_usd`) via quartile binning and accidentally left in the model's inputs. This was removed and the model retrained to ensure reported performance reflects genuine predictive power rather than an artifact of leakage.
- livvy@fedora:~/Documents/Projects_to_be_finished/Global-AI-Job-Market-Intelligence-Report$ 
-
+Ivy Atieno. [GitHub](https://github.com/Atieng)
